@@ -5,6 +5,8 @@
 ![Peer](https://img.shields.io/badge/peer-Leaflet%201.9-777BB4?style=flat)
 ![API key](https://img.shields.io/badge/api%20key-not%20required-00d2ff?style=flat)
 
+**[Try it live](https://bryanhamiltondev.github.io/next-show-radar/demo/)** - the hosted demo, geolocation prompt and all.
+
 The geolocation-aware tour map from [The DJ Calendar](https://thedjcalendar.com),
 extracted as a standalone, open-source widget. Give it a list of shows; it shows
 the visitor the ones near them - and stays useful when they decline.
@@ -37,9 +39,9 @@ get a broken or useless map. Here they get the same working map everyone else
 does, minus only the personalization. **The map is never the hero. The shows
 are - and no answer to the permission prompt ever breaks them.**
 
-The [demo](demo/index.html) lets you see both experiences back to back: allow
-the prompt once, then click "Reset location memory" and reload to be asked
-again and block it.
+The [live demo](https://bryanhamiltondev.github.io/next-show-radar/demo/)
+lets you see both experiences back to back: allow the prompt once, then click
+"Reset location memory" and reload to be asked again and block it.
 
 ## The design stance
 
