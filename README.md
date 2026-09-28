@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/badge/license-MIT-00d2ff?style=flat)
 ![Dependencies](https://img.shields.io/badge/dependencies-0-00d2ff?style=flat)
 ![Peer](https://img.shields.io/badge/peer-Leaflet%201.9-777BB4?style=flat)
-![Size](https://img.shields.io/badge/radar.js-one%20file-777BB4?style=flat)
+![API key](https://img.shields.io/badge/api%20key-not%20required-00d2ff?style=flat)
 
 The geolocation-aware tour map from [The DJ Calendar](https://thedjcalendar.com),
 extracted as a standalone, open-source widget. Give it a list of shows; it shows
@@ -103,7 +103,32 @@ must never become a pin at 0,0 in the South Atlantic.
 | Nearby radius (miles) | `data-radar-radius` | `radius` | `200` |
 | Fallback zoom (empty radius) | `data-radar-fallback-zoom` | `fallbackZoom` | `8` |
 | Pin color | `data-radar-color` | `color` | `#00d2ff` |
-| Tile URL template | `data-radar-tiles` | `tiles` | CARTO dark |
+| Tile URL template | `data-radar-tiles` | `tiles` | Esri Dark Gray |
+| Tile native max zoom | `data-radar-max-zoom` | `maxNativeZoom` | `16` |
+
+## Tiles & providers (why the default changed)
+
+The widget ships with **Esri's keyless dark-gray canvas** as its default
+basemap, and that default is a deliberate engineering decision rather than a
+taste call. CARTO's public basemap CDN served free, keyless raster tiles for
+years, and this widget originally defaulted to their beautiful Dark Matter
+style - but in 2026 CARTO began gating keyless traffic, and maps that defaulted
+to those URLs started rendering error tiles reading "API key required."
+
+A widget whose default map silently breaks is a widget nobody can trust, so the
+default is now a provider that works today with no account: Esri's
+World Dark Gray canvas (free with attribution, which the widget supplies).
+
+- **Want CARTO Dark Matter anyway?** One knob:
+  `data-radar-tiles="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"`
+  - if you have a CARTO account, append your `api_key` parameter and set
+    `data-radar-max-zoom="18"`.
+- **Want plain OpenStreetMap?**
+  `data-radar-tiles="https://tile.openstreetmap.org/{z}/{x}/{y}.png"` and
+  `data-radar-max-zoom="19"`.
+- **Running this in production?** Whatever provider you pick, read its terms
+  and keep the attribution. Basemap CDNs change their policies; the knob
+  exists so *you* change one attribute, not your code.
 
 ## Accessibility
 

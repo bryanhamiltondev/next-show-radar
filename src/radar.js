@@ -8,22 +8,25 @@
 (function () {
   "use strict";
 
+  /*
+   * Default tiles: Esri's keyless dark-gray canvas. This default is a
+   * deliberate engineering decision, not a cosmetic one: CARTO's public
+   * basemap CDN began gating keyless traffic in 2026, and a widget whose
+   * default map silently breaks is a widget nobody can trust. Any provider
+   * is one knob away via data-radar-tiles / options.tiles.
+   */
   var DEFAULTS = {
     radius: 200,           /* miles - the nearby fit radius */
     fallbackZoom: 8,       /* zoom when zero pins are in radius */
     color: "#00d2ff",      /* pin color */
-    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    tiles: "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    attribution: 'Tiles &copy; <a href="https://www.esri.com">Esri</a>, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, and the GIS user community',
+    maxNativeZoom: 16      /* the default provider's native max; Leaflet upscales beyond */
   };
 
   var EARTH_RADIUS_MILES = 3958.8;
   var LEAFLET_WAIT_MS = 5000;
   var SINGLE_POINT_ZOOM = 11;
-
-  /* ------------------------------------------------------------------ *
-   * Geolocation: opt-in, cached after the first read, never re-prompts.
-   * Denial is a first-class answer - every caller gets a resolution.
-   * ------------------------------------------------------------------ */
 
   var cachedCoords = null;
   var geoAsked = false;
@@ -44,15 +47,10 @@
     });
   }
 
-  /* Clear the cache + denial memory so a demo (or a user gesture) may ask again. */
   function resetGeo() {
     cachedCoords = null;
     geoAsked = false;
   }
-
-  /* ------------------------------------------------------------------ *
-   * Distance: haversine, in miles. No library needed for one formula.
-   * ------------------------------------------------------------------ */
 
   function haversineMiles(a, b) {
     var rad = Math.PI / 180;
@@ -63,10 +61,6 @@
             Math.sin(dLng / 2) * Math.sin(dLng / 2);
     return 2 * EARTH_RADIUS_MILES * Math.asin(Math.min(1, Math.sqrt(s)));
   }
-
-  /* ------------------------------------------------------------------ *
-   * Knobs: per-instance data attributes or an options object.
-   * ------------------------------------------------------------------ */
 
   function readKnobs(el, options) {
     var o = {};
@@ -79,19 +73,15 @@
     var fallbackZoom = el.getAttribute("data-radar-fallback-zoom");
     var color = el.getAttribute("data-radar-color");
     var tiles = el.getAttribute("data-radar-tiles");
+    var maxNativeZoom = el.getAttribute("data-radar-max-zoom");
     if (radius) { o.radius = parseFloat(radius) || o.radius; }
     if (fallbackZoom) { o.fallbackZoom = parseInt(fallbackZoom, 10) || o.fallbackZoom; }
     if (color) { o.color = color; }
     if (tiles) { o.tiles = tiles; }
+    if (maxNativeZoom) { o.maxNativeZoom = parseInt(maxNativeZoom, 10) || o.maxNativeZoom; }
     return o;
   }
 
-  /*
-   * Data contract: a JSON array injected into the page (server-rendered or
-   * set at runtime). Shows without numeric lat/lng are omitted - same rule
-   * the production map follows; an un-geocoded show must not become a pin
-   * at 0,0 in the South Atlantic.
-   */
   function readPoints(el) {
     var raw = el.getAttribute("data-radar-points");
     if (!raw) { return []; }
@@ -102,10 +92,6 @@
       return p && typeof p.lat === "number" && typeof p.lng === "number";
     });
   }
-
-  /* ------------------------------------------------------------------ *
-   * Output: escaping first. Popup fields are data; treat them that way.
-   * ------------------------------------------------------------------ */
 
   function esc(value) {
     return String(value).replace(/[&<>"']/g, function (c) {
@@ -124,8 +110,6 @@
     return html;
   }
 
-  /* The visible caption doubles as the ARIA live region: one element,
-     sighted users and screen readers get the same sentence. */
   function announce(el, msg) {
     var live = el.querySelector(".radar-live");
     if (!live) {
@@ -137,11 +121,6 @@
     }
     live.textContent = msg;
   }
-
-  /* ------------------------------------------------------------------ *
-   * Boot: race-safe. Guard flag, retry on load, one poll loop for the
-   * peer dependency. A second init attempt can never double-render.
-   * ------------------------------------------------------------------ */
 
   function whenLeaflet(cb, fail, waited) {
     if (window.L) { cb(); return; }
@@ -168,11 +147,6 @@
     );
   }
 
-  /*
-   * Bounds, safely. Leaflet's fitBounds throws on a single-point bounds,
-   * so one point gets a plain setView instead - an artist with one show
-   * deserves a working map too.
-   */
   function fitPoints(map, points, motion) {
     if (points.length > 1) {
       var b = L.latLngBounds(points.map(function (p) { return [p.lat, p.lng]; }));
@@ -187,7 +161,11 @@
     var motion = { animate: !reduced };
 
     var map = L.map(frame, { scrollWheelZoom: false }).setView([25, 0], 2);
-    L.tileLayer(knobs.tiles, { attribution: knobs.attribution, maxZoom: 18 }).addTo(map);
+    L.tileLayer(knobs.tiles, {
+      attribution: knobs.attribution,
+      maxZoom: 18,
+      maxNativeZoom: knobs.maxNativeZoom
+    }).addTo(map);
 
     var pinIcon = L.divIcon({
       className: "radar-pin",
@@ -208,7 +186,6 @@
     }
 
     getUserCoords().then(function (me) {
-      /* The deny contract: global view, calm announcement, no broken UI. */
       if (!me) {
         fitPoints(map, points, motion);
         announce(el, "Location not available - showing all " + points.length + " shows.");
@@ -233,10 +210,6 @@
     });
   }
 
-  /* ------------------------------------------------------------------ *
-   * Public API
-   * ------------------------------------------------------------------ */
-
   function init(root, options) {
     var scope = root || document;
     if (scope.nodeType === 1 && scope.hasAttribute && scope.hasAttribute("data-radar")) {
@@ -259,7 +232,6 @@
   } else {
     autoInit();
   }
-  /* Retry path: if scripts loaded out of order, a window load pass catches it. */
   window.addEventListener("load", autoInit);
 
   window.NextShowRadar = { init: init, reset: resetGeo };
