@@ -1,0 +1,98 @@
+/*!
+ * next-show-radar - the geolocation-aware tour map
+ * Zero dependencies. Dark neon skin for Leaflet, matching The DJ Calendar.
+ * https://github.com/bryanhamiltondev/next-show-radar
+ * MIT licensed.
+ */
+
+.radar {
+  --radar-color: #00d2ff;
+  --radar-bg: #0d1117;
+  --radar-border: rgba(0, 210, 255, 0.25);
+  --radar-text: #e6edf3;
+  --radar-muted: #8b949e;
+  --radar-height: 360px;
+}
+
+.radar-frame {
+  height: var(--radar-height);
+  border: 1px solid var(--radar-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--radar-bg);
+}
+
+/* The visible caption IS the live region - same sentence for everyone. */
+.radar-live {
+  margin: 10px 2px 0;
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: var(--radar-muted);
+}
+
+/* Show pins: neon dot with a white ring, per-instance color. */
+.radar-pin {
+  background: none !important;
+  border: none !important;
+}
+
+.radar-pin-dot {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 8px var(--radar-color);
+}
+
+/* The "You" marker: deliberately a different species. */
+.radar-you {
+  background: none !important;
+  border: none !important;
+}
+
+.radar-you-dot {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f85149;
+  border: 2px solid #fff;
+  box-shadow: 0 0 10px rgba(248, 81, 73, 0.8);
+}
+
+/* Dark popup skin so the default white Leaflet popup doesn't break the room. */
+.radar .leaflet-popup-content-wrapper,
+.radar .leaflet-popup-tip {
+  background: #161b22;
+  color: var(--radar-text);
+  border: 1px solid var(--radar-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.radar .leaflet-popup-content {
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  margin: 12px 16px;
+}
+
+.radar .radar-popup-link {
+  color: var(--radar-color);
+  text-decoration: none;
+}
+
+.radar .radar-popup-link:hover {
+  text-decoration: underline;
+}
+
+.radar .leaflet-container {
+  background: var(--radar-bg);
+  font: inherit;
+}
+
+.radar .leaflet-control-attribution {
+  background: rgba(13, 17, 23, 0.8);
+  color: var(--radar-muted);
+}
+
+.radar .leaflet-control-attribution a {
+  color: var(--radar-muted);
+}

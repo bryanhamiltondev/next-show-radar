@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>next-show-radar - demo</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="../src/radar.css">
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0;
+    padding: 48px 24px;
+    background: #0d1117;
+    color: #e6edf3;
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 28px; margin: 0 0 8px; }
+  h1 span { color: #00d2ff; }
+  p.lead { color: #8b949e; margin: 0 0 40px; }
+  section { margin: 0 0 48px; }
+  h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: #8b949e; margin: 0 0 16px; }
+  button {
+    background: #161b22;
+    color: #00d2ff;
+    border: 1px solid rgba(0, 210, 255, 0.35);
+    border-radius: 6px;
+    padding: 8px 14px;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  button:hover { border-color: #00d2ff; }
+  code { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; color: #00d2ff; }
+</style>
+</head>
+<body>
+<main>
+  <h1>next<span>-</span>show-radar</h1>
+  <p class="lead">The geolocation-aware tour map from The DJ Calendar. Allow the location prompt to see the nearby fit; decline it to see the deny contract - a full global view and a calm, announced fallback. Either answer gets a working map.</p>
+
+  <section>
+    <h2>Default - 200 mile radius, CARTO dark tiles</h2>
+    <div data-radar data-radar-points='{"placeholder":false}'></div>
+    <p class="lead" style="margin-top:12px">Re-run after a permission change? <button id="resetGeo" type="button">Reset location memory</button> then reload - it clears the cache and the denial memory via <code>NextShowRadar.reset()</code>.</p>
+  </section>
+
+  <section>
+    <h2>Knobs - 60 mile radius, custom color, lower fallback zoom</h2>
+    <div data-radar data-radar-radius="60" data-radar-fallback-zoom="10" data-radar-color="#3fb950" data-radar-points='{"placeholder":false}'></div>
+  </section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  /* Demo data: real venues from The DJ Calendar's world, injected inline -
+     the same data contract the production server emits. */
+  var SHOWS = [
+    { title: "Alan Walker",        date: "Jun 6",  venue: "Marquee New York",            city: "New York City, NY", lat: 40.7590, lng: -73.9845, url: "https://www.thedjcalendar.com" },
+    { title: "Black Coffee",       date: "Oct 17", venue: "Pacha New York",              city: "Brooklyn, NY",      lat: 40.7180, lng: -73.9579, url: "https://www.thedjcalendar.com" },
+    { title: "Afrojack",           date: "May 30", venue: "HQ2 Beachclub at Ocean Casino Resort", city: "Atlantic City, NJ", lat: 39.3804, lng: -74.4060, url: "https://www.thedjcalendar.com" },
+    { title: "Amelie Lens",        date: "Jul 12", venue: "The Brooklyn Mirage",         city: "Brooklyn, NY",      lat: 40.7069, lng: -73.9375, url: "https://www.thedjcalendar.com" },
+    { title: "Martin Garrix",      date: "Aug 22", venue: "Ushuaia Ibiza",               city: "Ibiza, ES",         lat: 38.9100, lng: 1.4200,   url: "https://www.thedjcalendar.com" }
+  ];
+  var payload = JSON.stringify(SHOWS);
+  document.querySelectorAll("[data-radar]").forEach(function (el) {
+    el.setAttribute("data-radar-points", payload);
+  });
+  document.getElementById("resetGeo").addEventListener("click", function () {
+    window.NextShowRadar.reset();
+    location.reload();
+  });
+</script>
+<script src="../src/radar.js"></script>
+</body>
+</html>
