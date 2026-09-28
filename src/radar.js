@@ -140,7 +140,7 @@
 
   /* ------------------------------------------------------------------ *
    * Boot: race-safe. Guard flag, retry on load, one poll loop for the
-n   * peer dependency. A second init attempt can never double-render.
+   * peer dependency. A second init attempt can never double-render.
    * ------------------------------------------------------------------ */
 
   function whenLeaflet(cb, fail, waited) {
@@ -171,7 +171,7 @@ n   * peer dependency. A second init attempt can never double-render.
   /*
    * Bounds, safely. Leaflet's fitBounds throws on a single-point bounds,
    * so one point gets a plain setView instead - an artist with one show
-n   * deserves a working map too.
+   * deserves a working map too.
    */
   function fitPoints(map, points, motion) {
     if (points.length > 1) {

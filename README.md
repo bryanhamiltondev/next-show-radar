@@ -2,7 +2,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-00d2ff?style=flat)
 ![Dependencies](https://img.shields.io/badge/dependencies-0-00d2ff?style=flat)
-![Peer](https://img.shields.io/badge/peer-Leadlet%201.9-777BB4?style=flat)
+![Peer](https://img.shields.io/badge/peer-Leaflet%201.9-777BB4?style=flat)
 ![Size](https://img.shields.io/badge/radar.js-one%20file-777BB4?style=flat)
 
 The geolocation-aware tour map from [The DJ Calendar](https://thedjcalendar.com),
@@ -85,9 +85,10 @@ animations; the map simply arrives where it means to be.
 
 The boot is guarded: a render flag prevents double-initialization, init retries
 on `DOMContentLoaded` and `window.load`, and the engine polls briefly for the
-Leaflet peer before rendering. The production version of this loader logic
-survived a real bug class - duplicated library injection destroying an
-initialized map - which is documented in its sibling repo,
+Leaflet peer before rendering - and announces clearly if it never arrives.
+The production version of this loader logic survived a real bug class -
+duplicated library injection destroying an initialized map - which is
+documented in its sibling repo,
 [sri-lazy-loader](https://github.com/bryanhamiltondev/sri-lazy-loader).
 
 ## The pair
