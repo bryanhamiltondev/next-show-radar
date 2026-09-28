@@ -18,6 +18,7 @@
 
   var EARTH_RADIUS_MILES = 3958.8;
   var LEAFLET_WAIT_MS = 5000;
+  var SINGLE_POINT_ZOOM = 11;
 
   /* ------------------------------------------------------------------ *
    * Geolocation: opt-in, cached after the first read, never re-prompts.
@@ -139,14 +140,14 @@
 
   /* ------------------------------------------------------------------ *
    * Boot: race-safe. Guard flag, retry on load, one poll loop for the
-   * peer dependency. A second init attempt can never double-render.
+n   * peer dependency. A second init attempt can never double-render.
    * ------------------------------------------------------------------ */
 
-  function whenLeaflet(cb, waited) {
+  function whenLeaflet(cb, fail, waited) {
     if (window.L) { cb(); return; }
     var w = (waited || 0) + 250;
-    if (w > LEAFLET_WAIT_MS) { return; } /* integrator handles loading; stay silent rather than half-render */
-    setTimeout(function () { whenLeaflet(cb, w); }, 250);
+    if (w > LEAFLET_WAIT_MS) { fail(); return; }
+    setTimeout(function () { whenLeaflet(cb, fail, w); }, 250);
   }
 
   function render(el, options) {
@@ -161,12 +162,24 @@
     el.insertBefore(frame, el.firstChild);
     announce(el, "Loading map...");
 
-    whenLeaflet(function () { boot(el, frame, knobs, points); });
+    whenLeaflet(
+      function () { boot(el, frame, knobs, points); },
+      function () { announce(el, "The map engine (Leaflet) did not load. Check that Leaflet CSS and JS are present."); }
+    );
   }
 
-  function boundsOf(points) {
-    var b = L.latLngBounds(points.map(function (p) { return [p.lat, p.lng]; }));
-    return b;
+  /*
+   * Bounds, safely. Leaflet's fitBounds throws on a single-point bounds,
+   * so one point gets a plain setView instead - an artist with one show
+n   * deserves a working map too.
+   */
+  function fitPoints(map, points, motion) {
+    if (points.length > 1) {
+      var b = L.latLngBounds(points.map(function (p) { return [p.lat, p.lng]; }));
+      map.fitBounds(b, Object.assign({ padding: [24, 24] }, motion));
+    } else {
+      map.setView([points[0].lat, points[0].lng], SINGLE_POINT_ZOOM, motion);
+    }
   }
 
   function boot(el, frame, knobs, points) {
@@ -197,7 +210,7 @@
     getUserCoords().then(function (me) {
       /* The deny contract: global view, calm announcement, no broken UI. */
       if (!me) {
-        map.fitBounds(boundsOf(points), Object.assign({ padding: [24, 24] }, motion));
+        fitPoints(map, points, motion);
         announce(el, "Location not available - showing all " + points.length + " shows.");
         return;
       }
@@ -209,7 +222,7 @@
       var near = points.filter(function (p) { return haversineMiles(me, p) <= knobs.radius; });
 
       if (near.length) {
-        var b = boundsOf(near);
+        var b = L.latLngBounds(near.map(function (p) { return [p.lat, p.lng]; }));
         b.extend([me.lat, me.lng]);
         map.fitBounds(b, Object.assign({ padding: [24, 24] }, motion));
         announce(el, near.length + (near.length === 1 ? " show" : " shows") + " within " + knobs.radius + " miles.");
